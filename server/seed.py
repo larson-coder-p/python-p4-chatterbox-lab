@@ -1,34 +1,17 @@
-#!/usr/bin/env python3
-
-from random import choice as rc
-
-from faker import Faker
-
+# seed.py
 from app import app
 from models import db, Message
 
-fake = Faker()
+with app.app_context():
+    # Optional: Drop all tables and re-create them for a clean slate.
+    db.drop_all()
+    db.create_all()
 
-usernames = [fake.first_name() for i in range(4)]
-if "Duane" not in usernames:
-    usernames.append("Duane")
+    # Create sample messages
+    message1 = Message(body="Hello, World!", username="Ian")
+    message2 = Message(body="Welcome to Chatterbox!", username="Alice")
 
-def make_messages():
+    db.session.add_all([message1, message2])
+    db.session.commit()
 
-    Message.query.delete()
-    
-    messages = []
-
-    for i in range(20):
-        message = Message(
-            body=fake.sentence(),
-            username=rc(usernames),
-        )
-        messages.append(message)
-
-    db.session.add_all(messages)
-    db.session.commit()        
-
-if __name__ == '__main__':
-    with app.app_context():
-        make_messages()
+    print("Database seeded!")
